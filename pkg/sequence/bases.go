@@ -13,14 +13,14 @@ var AmbiguousAminoAcidsMap = map[AminoAcid][]AminoAcid{
 
 var AmbiguousNucleotidesMap = map[Nucleotide][]Nucleotide{
 	'R': {'A', 'G'},
-	'Y': {'C', 'T'},
+	'Y': {'C', 'U'},
 	'S': {'G', 'C'},
-	'W': {'A', 'T'},
-	'K': {'G', 'T'},
+	'W': {'A', 'U'},
+	'K': {'G', 'U'},
 	'M': {'A', 'C'},
-	'B': {'C', 'G', 'T'},
-	'D': {'A', 'G', 'T'},
-	'H': {'A', 'C', 'T'},
+	'B': {'C', 'G', 'U'},
+	'D': {'A', 'G', 'U'},
+	'H': {'A', 'C', 'U'},
 	'V': {'A', 'C', 'G'},
-	'N': {'A', 'C', 'G', 'T'},
+	'N': {'A', 'C', 'G', 'U'},
 }
