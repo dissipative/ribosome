@@ -1,31 +1,110 @@
 package sequence
 
 import (
-	"bytes"
+	"fmt"
+	"strings"
 )
 
 type CodonTable struct {
+	ID          int                  `json:"id"`
 	Name        string               `json:"name"`
 	Description string               `json:"description"`
 	Codons      map[string]AminoAcid `json:"codon_table"`
 }
 
 // GetCodonTable stub
-func GetCodonTable(id int) (*CodonTable, error) {
+func GetCodonTable(id int) (CodonTable, error) {
+	codonTables := []CodonTable{
+		Standard,
+		VertebrateMitochondrial,
+		YeastMitochondrial,
+		MoldProtozoanCoelenterateMitochondrial,
+		InvertebrateMitochondrial,
+		CiliateDasycladaceanHexamitaNuclear,
+		EchinodermAndFlatwormMitochondrial,
+		EuplotidNuclear,
+		EchinococcusAscarisMitochondrial,
+	}
 
-	return &CodonTable{}, nil
+	for _, c := range codonTables {
+		if id == c.ID {
+			return c.Copy(), nil
+		}
+	}
+
+	return CodonTable{}, fmt.Errorf("codon table no. %d not found", id)
+}
+
+func (c *CodonTable) Copy() CodonTable {
+	tableCopy := *c
+
+	copiedCodons := make(map[string]AminoAcid, len(tableCopy.Codons))
+	for k, v := range tableCopy.Codons {
+		copiedCodons[k] = v
+	}
+
+	tableCopy.Codons = copiedCodons
+	return tableCopy
 }
 
 // ModifyCodonUsage stub
-func (c *CodonTable) ModifyCodonUsage(customCodons map[string]string) error {
+func (c *CodonTable) ModifyCodonUsage(customCodons map[string]AminoAcid) error {
+	// Validate custom codons
+	for codon, aa := range customCodons {
+		// Check if the codon is 3 characters long
+		if len(codon) != 3 {
+			return fmt.Errorf("invalid codon length for '%s': expected 3 characters", codon)
+		}
+
+		// Ensure all characters in the codon are uppercase RNA nucleotides or ambiguous symbols
+		for _, ch := range codon {
+			if !isValidRNANucleotide(Nucleotide(ch)) {
+				return fmt.Errorf("invalid character '%c' in codon '%s': expected uppercase RNA nucleotide or ambiguous symbol", ch, codon)
+			}
+		}
+
+		// Validate the amino acid
+		if !isValidAminoAcid(aa) {
+			return fmt.Errorf("invalid amino acid '%c' for codon '%s'", aa, codon)
+		}
+	}
+
+	// Modify the codon table
+	for codon, aa := range customCodons {
+		c.Codons[codon] = aa
+	}
 
 	return nil
+}
+
+func isValidRNANucleotide(base Nucleotide) bool {
+	_, isAmbiguous := AmbiguousNucleotidesMap[base]
+	isBasic := false
+	for _, b := range AmbiguousNucleotidesMap['N'] {
+		if b == base {
+			isBasic = true
+		}
+	}
+
+	return isBasic || isAmbiguous
+}
+
+func isValidAminoAcid(aa AminoAcid) bool {
+	_, isAmbiguous := AmbiguousAminoAcidsMap[aa]
+	isBasic := false
+	for _, a := range AmbiguousAminoAcidsMap['X'] {
+		if a == aa {
+			isBasic = true
+		}
+	}
+
+	return isBasic || isAmbiguous
 }
 
 func (c *CodonTable) TranslateCodon(codon string) AminoAcid {
 	possibleBases := make([][]Nucleotide, len(codon))
 
-	codon = string(bytes.ToUpper([]byte(codon)))
+	codon = strings.ToUpper(codon)
 	codonsCount := 1
 
 	for i, b := range codon {
@@ -50,7 +129,6 @@ func (c *CodonTable) TranslateCodon(codon string) AminoAcid {
 		if !found || (result != 0 && aa != result) {
 			return 'X'
 		}
-
 		result = aa
 	}
 	return result
