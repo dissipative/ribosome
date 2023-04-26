@@ -12,7 +12,6 @@ type CodonTable struct {
 	Codons      map[string]AminoAcid `json:"codon_table"`
 }
 
-// GetCodonTable stub
 func GetCodonTable(id int) (CodonTable, error) {
 	for _, c := range CodonTables {
 		if id == c.ID {
@@ -35,9 +34,7 @@ func (c *CodonTable) Copy() CodonTable {
 	return tableCopy
 }
 
-// ModifyCodonUsage stub
 func (c *CodonTable) ModifyCodonUsage(customCodons map[string]AminoAcid) error {
-	// Validate custom codons
 	for codon, aa := range customCodons {
 		// Check if the codon is 3 characters long
 		if len(codon) != 3 {

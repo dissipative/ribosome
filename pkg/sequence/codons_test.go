@@ -104,9 +104,7 @@ func TestGetCodonTable(t *testing.T) {
 		if reflect.DeepEqual(AminoAcid('T'), standardTable.Codons["AAA"]) {
 			t.Errorf("user must not be able to change exported variables. AAA codon is changet to %s", string(standardTable.Codons["AAA"]))
 		}
-
 	})
-
 }
 
 func TestCodonTable_Copy(t *testing.T) {
