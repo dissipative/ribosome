@@ -4,14 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/dissipative/ribosome/pkg/ncbi"
+	"github.com/dissipative/ribosome/pkg/sequence"
+	"github.com/jlaffaye/ftp"
 	"go/format"
 	"log"
 	"os"
 	"text/template"
-
-	"github.com/dissipative/ribosome/pkg/ncbi"
-	"github.com/dissipative/ribosome/pkg/sequence"
-	"github.com/jlaffaye/ftp"
+	"time"
 )
 
 const ftpAddr = "ftp.ncbi.nih.gov:21"
@@ -78,6 +78,9 @@ func generateCode(wr *bytes.Buffer, tables []sequence.CodonTable) error {
 		},
 		"add": func(a, b int) int {
 			return a + b
+		},
+		"date": func() string {
+			return fmt.Sprintf(" %s", time.Now().Format("2006-01-02 15:04"))
 		},
 	}
 

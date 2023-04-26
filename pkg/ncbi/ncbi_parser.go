@@ -4,76 +4,40 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/dissipative/ribosome/pkg/sequence"
 )
 
-type ncbiCodeData struct {
-	ncbieaa string
-	base1   string
-	base2   string
-	base3   string
-}
-
 func ParsePRTCodonTables(scanner *bufio.Scanner) ([]sequence.CodonTable, error) {
 	var tables []sequence.CodonTable
-	var codons *ncbiCodeData
-	var parser = &tableParser{}
+	var parser = newTableParser()
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		// Ignore comments and genetic codes beginning
-		if strings.Contains(line, "Genetic-code-table") || (strings.HasPrefix(line, "--") && !strings.HasPrefix(line, "-- Base")) {
+		if strings.Contains(line, "Genetic-code-table") || strings.Contains(line, "}") || (strings.HasPrefix(line, "--") && !strings.HasPrefix(line, "-- Base")) {
 			continue
 		}
 
 		if strings.Contains(line, "{") {
-			codons = &ncbiCodeData{}
-			parser = &tableParser{
-				table: &sequence.CodonTable{
-					Codons: make(map[string]sequence.AminoAcid),
-				},
-			}
+			// refresh parser for each new table
+			parser = newTableParser()
 			continue
 		}
 
-		parser.processName(line)
+		err := parser.processID(line)
+		if err != nil {
+			return nil, err
+		}
 
-		// Match key-value pairs
-		re := regexp.MustCompile(`\s*(?:([a-zA-Z0-9]+)\s+(?:"([^"]+)"\s*,?|(\d+)\s*,?)|--\s+([a-zA-Z0-9]+)\s+([a-zA-Z0-9]+))`)
-		matches := re.FindStringSubmatch(line)
+		parser.processNameAndDescription(line)
+		parser.processCodons(line)
 
-		if len(matches) == 6 {
-			key := matches[1]
-			textVal := matches[2]
-			numVal := matches[3]
-			baseKey := matches[4]
-			baseVal := matches[5]
-
-			if key == "" {
-				key = baseKey
-			}
-
-			switch key {
-			case "id":
-				fmt.Sscanf(numVal, "%d", &parser.table.ID)
-			case "ncbieaa":
-				codons.ncbieaa = textVal
-			case "Base1":
-				codons.base1 = baseVal
-			case "Base2":
-				codons.base2 = baseVal
-			case "Base3":
-				codons.base3 = baseVal
-				parser.table.Codons = codons.parse()
-			}
-
-			if parser.table.ID != 0 && parser.table.Name != "" && len(parser.table.Codons) > 0 {
-				tables = append(tables, *parser.table)
-			}
+		if parser.table.ID != 0 && parser.table.Name != "" && len(parser.table.Codons) > 0 {
+			tables = append(tables, *parser.table)
 		}
 	}
 
@@ -88,19 +52,6 @@ func ParsePRTCodonTables(scanner *bufio.Scanner) ([]sequence.CodonTable, error) 
 	return tables, nil
 }
 
-func (c *ncbiCodeData) parse() map[string]sequence.AminoAcid {
-	codonTable := make(map[string]sequence.AminoAcid)
-
-	for i := 0; i < len(c.ncbieaa); i++ {
-		codon := string([]byte{c.base1[i], c.base2[i], c.base3[i]})
-		// !! DNA -> RNA
-		codon = strings.ReplaceAll(codon, "T", "U")
-		codonTable[codon] = sequence.AminoAcid(c.ncbieaa[i])
-	}
-
-	return codonTable
-}
-
 func removeTagAndTrim(line string, tag string) string {
 	line = strings.Replace(line, tag, "", 1)
 	line = strings.ReplaceAll(line, "\"", "")
@@ -109,12 +60,29 @@ func removeTagAndTrim(line string, tag string) string {
 }
 
 type tableParser struct {
-	nameIsUsed bool
-	multiline  bool
-	table      *sequence.CodonTable
+	nameIsUsed   bool
+	multiline    bool
+	table        *sequence.CodonTable
+	ncbiCodeData *ncbiCodeData
 }
 
-func (tp *tableParser) processName(line string) {
+type ncbiCodeData struct {
+	ncbieaa string
+	base1   string
+	base2   string
+	base3   string
+}
+
+func newTableParser() *tableParser {
+	return &tableParser{
+		table: &sequence.CodonTable{
+			Codons: make(map[string]sequence.AminoAcid),
+		},
+		ncbiCodeData: &ncbiCodeData{},
+	}
+}
+
+func (tp *tableParser) processNameAndDescription(line string) {
 	val := removeTagAndTrim(line, "name")
 
 	if strings.Contains(line, "name") {
@@ -144,5 +112,52 @@ func (tp *tableParser) processName(line string) {
 				tp.nameIsUsed = true
 			}
 		}
+	}
+}
+
+func (tp *tableParser) processID(line string) error {
+	if !strings.Contains(line, " id") {
+		return nil
+	}
+
+	var err error
+
+	tp.table.ID, err = strconv.Atoi(removeTagAndTrim(line, "id"))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (tp *tableParser) processCodons(line string) {
+	if strings.Contains(line, "sncbieaa") {
+		return
+	}
+	if strings.Contains(line, "ncbieaa") {
+		tp.ncbiCodeData.ncbieaa = removeTagAndTrim(line, "ncbieaa")
+	}
+	if strings.Contains(line, "-- Base1") {
+		tp.ncbiCodeData.base1 = removeTagAndTrim(line, "-- Base1")
+	}
+	if strings.Contains(line, "-- Base2") {
+		tp.ncbiCodeData.base2 = removeTagAndTrim(line, "-- Base2")
+	}
+	if strings.Contains(line, "-- Base3") {
+		tp.ncbiCodeData.base3 = removeTagAndTrim(line, "-- Base3")
+	}
+	if tp.ncbiCodeData != nil &&
+		tp.ncbiCodeData.ncbieaa != "" && tp.ncbiCodeData.base1 != "" &&
+		tp.ncbiCodeData.base2 != "" && tp.ncbiCodeData.base3 != "" {
+		tp.parseNCBICodeData()
+	}
+}
+
+func (tp *tableParser) parseNCBICodeData() {
+	for i := 0; i < len(tp.ncbiCodeData.ncbieaa); i++ {
+		codon := string([]byte{tp.ncbiCodeData.base1[i], tp.ncbiCodeData.base2[i], tp.ncbiCodeData.base3[i]})
+		// !! DNA -> RNA
+		codon = strings.ReplaceAll(codon, "T", "U")
+		tp.table.Codons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
 	}
 }
