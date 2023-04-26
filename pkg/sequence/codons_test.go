@@ -6,7 +6,7 @@ import (
 )
 
 func TestCodonTable_TranslateCodon(t *testing.T) {
-	ct := Standard
+	standardTable := CodonTables[0]
 
 	testCases := []struct {
 		name     string
@@ -23,7 +23,7 @@ func TestCodonTable_TranslateCodon(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := ct.TranslateCodon(tc.codon)
+			result := standardTable.TranslateCodon(tc.codon)
 			if result != tc.expected {
 				t.Errorf("Expected %c, got %c", tc.expected, result)
 			}
@@ -84,13 +84,15 @@ func TestCodonTable_ModifyCodonUsage(t *testing.T) {
 
 func TestGetCodonTable(t *testing.T) {
 	t.Run("edit-obtained-table", func(t *testing.T) {
-		got, err := GetCodonTable(Standard.ID)
+		standardTable := CodonTables[0]
+
+		got, err := GetCodonTable(standardTable.ID)
 		if err != nil {
 			t.Errorf("GetCodonTable() error = %v,", err)
 			return
 		}
-		if !reflect.DeepEqual(got, Standard) {
-			t.Errorf("GetCodonTable() got = %v, want %v", got, Standard)
+		if !reflect.DeepEqual(got, standardTable) {
+			t.Errorf("GetCodonTable() got = %v, want %v", got, standardTable)
 		}
 
 		err = got.ModifyCodonUsage(map[string]AminoAcid{"AAA": 'T'})
@@ -99,8 +101,8 @@ func TestGetCodonTable(t *testing.T) {
 			return
 		}
 
-		if reflect.DeepEqual(AminoAcid('T'), Standard.Codons["AAA"]) {
-			t.Errorf("user must not be able to change exported variables. AAA codon is changet to %s", string(Standard.Codons["AAA"]))
+		if reflect.DeepEqual(AminoAcid('T'), standardTable.Codons["AAA"]) {
+			t.Errorf("user must not be able to change exported variables. AAA codon is changet to %s", string(standardTable.Codons["AAA"]))
 		}
 
 	})
@@ -114,13 +116,12 @@ func TestCodonTable_Copy(t *testing.T) {
 	}{
 		{
 			name: "Standard",
-			c:    Standard,
+			c:    CodonTables[0],
 		},
 		{
-			name: "VertebrateMitochondrial",
-			c:    VertebrateMitochondrial,
+			name: "Vertebrate Mitochondrial",
+			c:    CodonTables[1],
 		},
-		// Add other codon tables here
 	}
 
 	for _, tt := range tests {

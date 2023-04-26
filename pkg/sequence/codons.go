@@ -14,19 +14,7 @@ type CodonTable struct {
 
 // GetCodonTable stub
 func GetCodonTable(id int) (CodonTable, error) {
-	codonTables := []CodonTable{
-		Standard,
-		VertebrateMitochondrial,
-		YeastMitochondrial,
-		MoldProtozoanCoelenterateMitochondrial,
-		InvertebrateMitochondrial,
-		CiliateDasycladaceanHexamitaNuclear,
-		EchinodermAndFlatwormMitochondrial,
-		EuplotidNuclear,
-		EchinococcusAscarisMitochondrial,
-	}
-
-	for _, c := range codonTables {
+	for _, c := range CodonTables {
 		if id == c.ID {
 			return c.Copy(), nil
 		}

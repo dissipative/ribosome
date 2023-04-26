@@ -8,9 +8,8 @@ import (
 type Format int
 
 const (
-	unknown Format = iota
-	fasta
-	//genbank
+	Fasta Format = iota
+	//Genbank
 )
 
 func ReadFile(filename string, format Format) ([]Sequence, error) {
@@ -21,7 +20,7 @@ func ReadFile(filename string, format Format) ([]Sequence, error) {
 	defer file.Close()
 
 	switch format {
-	case fasta:
+	case Fasta:
 		return readFASTA(file)
 	default:
 		return nil, errors.New("unknown file format")
@@ -36,7 +35,7 @@ func WriteFile(filename string, format Format, sequences []Sequence) error {
 	defer file.Close()
 
 	switch format {
-	case fasta:
+	case Fasta:
 		return writeFASTA(file, sequences)
 	default:
 		return errors.New("unknown file format")
