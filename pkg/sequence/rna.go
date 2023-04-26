@@ -7,10 +7,9 @@ import (
 
 type RNASequence string
 
-var ErrInvalidCodon = errors.New("invalid codon found in RNA sequence")
 var ErrTooShortSequence = errors.New("sequence length must be at least 3")
 
-func (r RNASequence) Translate() (ProteinSequence, error) {
+func (r RNASequence) Translate(tableID int) (ProteinSequence, error) {
 	seqLength := len(r)
 
 	if seqLength < 3 {
@@ -21,17 +20,14 @@ func (r RNASequence) Translate() (ProteinSequence, error) {
 	codonsToTranslate := seqLength / 3
 
 	protein := make([]AminoAcid, codonsToTranslate)
-	codonTable, _ := GetCodonTable(1)
+	codonTable, err := GetCodonTable(tableID)
+	if err != nil {
+		return "", err
+	}
 
 	for i := 0; i < codonsToTranslate*3; i += 3 {
 		codon := strings.ToUpper(string(r[i : i+3]))
-
-		aminoAcid, ok := codonTable.Codons[codon]
-		if !ok {
-			return "", ErrInvalidCodon
-		}
-
-		protein[i/3] = aminoAcid
+		protein[i/3] = codonTable.TranslateCodon(codon)
 	}
 
 	return ProteinSequence(protein), nil
