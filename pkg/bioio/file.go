@@ -9,7 +9,7 @@ type Format int
 
 const (
 	Fasta Format = iota
-	//Genbank
+	Genbank
 )
 
 func ReadFile(filename string, format Format) ([]Sequence, error) {
@@ -22,6 +22,8 @@ func ReadFile(filename string, format Format) ([]Sequence, error) {
 	switch format {
 	case Fasta:
 		return readFASTA(file)
+	case Genbank:
+		return readGenbank(file)
 	default:
 		return nil, errors.New("unknown file format")
 	}

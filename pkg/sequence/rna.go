@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// RNASequence is actually sequence of mRNA
 type RNASequence string
 
 var ErrTooShortSequence = errors.New("sequence length must be at least 3")
