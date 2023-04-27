@@ -6,10 +6,12 @@ import (
 )
 
 type CodonTable struct {
-	ID          int                  `json:"id"`
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	Codons      map[string]AminoAcid `json:"codon_table"`
+	ID          int
+	Name        string
+	Description string
+	Codons      map[string]AminoAcid
+	StartCodons map[string]AminoAcid
+	StopCodons  map[string]AminoAcid
 }
 
 func GetCodonTable(id int) (CodonTable, error) {

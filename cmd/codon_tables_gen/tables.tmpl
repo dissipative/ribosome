@@ -30,6 +30,16 @@ var CodonTables = []CodonTable{
 
 			{{- end }}
 		},
+		StartCodons: map[string]AminoAcid{
+			{{- range $codon, $aa := .StartCodons }}
+			    "{{ $codon }}": {{ aaToString $aa }},
+            {{- end }}
+		},
+        StopCodons: map[string]AminoAcid{
+            {{- range $codon, $aa := .StopCodons }}
+                "{{ $codon }}": {{ aaToString $aa }},
+            {{- end }}
+        },
 	},
 {{- end }}
 }

@@ -67,16 +67,19 @@ type tableParser struct {
 }
 
 type ncbiCodeData struct {
-	ncbieaa string
-	base1   string
-	base2   string
-	base3   string
+	ncbieaa  string
+	sncbieaa string
+	base1    string
+	base2    string
+	base3    string
 }
 
 func newTableParser() *tableParser {
 	return &tableParser{
 		table: &sequence.CodonTable{
-			Codons: make(map[string]sequence.AminoAcid),
+			Codons:      make(map[string]sequence.AminoAcid),
+			StartCodons: make(map[string]sequence.AminoAcid),
+			StopCodons:  make(map[string]sequence.AminoAcid),
 		},
 		ncbiCodeData: &ncbiCodeData{},
 	}
@@ -132,9 +135,9 @@ func (tp *tableParser) processID(line string) error {
 
 func (tp *tableParser) processCodons(line string) {
 	if strings.Contains(line, "sncbieaa") {
-		return
+		tp.ncbiCodeData.sncbieaa = removeTagAndTrim(line, "sncbieaa")
 	}
-	if strings.Contains(line, "ncbieaa") {
+	if strings.Contains(line, " ncbieaa") {
 		tp.ncbiCodeData.ncbieaa = removeTagAndTrim(line, "ncbieaa")
 	}
 	if strings.Contains(line, "-- Base1") {
@@ -146,7 +149,7 @@ func (tp *tableParser) processCodons(line string) {
 	if strings.Contains(line, "-- Base3") {
 		tp.ncbiCodeData.base3 = removeTagAndTrim(line, "-- Base3")
 	}
-	if tp.ncbiCodeData != nil &&
+	if tp.ncbiCodeData != nil && tp.ncbiCodeData.sncbieaa != "" &&
 		tp.ncbiCodeData.ncbieaa != "" && tp.ncbiCodeData.base1 != "" &&
 		tp.ncbiCodeData.base2 != "" && tp.ncbiCodeData.base3 != "" {
 		tp.parseNCBICodeData()
@@ -159,5 +162,15 @@ func (tp *tableParser) parseNCBICodeData() {
 		// !! DNA -> RNA
 		codon = strings.ReplaceAll(codon, "T", "U")
 		tp.table.Codons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
+
+		if tp.ncbiCodeData.sncbieaa[i] == '-' {
+			continue
+		}
+		if tp.ncbiCodeData.sncbieaa[i] == '*' {
+			tp.table.StopCodons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
+		}
+		if tp.ncbiCodeData.sncbieaa[i] == 'M' {
+			tp.table.StartCodons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
+		}
 	}
 }

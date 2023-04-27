@@ -1,2 +1,2 @@
-//go:generate go run cmd/table_gen/table_gen.go
+//go:generate go run cmd/codon_tables_gen/generator.go
 package ribosome

@@ -17,7 +17,7 @@ import (
 const ftpAddr = "ftp.ncbi.nih.gov:21"
 const ftpPath = "entrez/misc/data/gc.prt"
 const anonymous = "anonymous"
-const outputFile = "pkg/sequence/tables.go"
+const outputFile = "pkg/sequence/codon_tables.go"
 
 func main() {
 	// Download gc.prt content
@@ -68,7 +68,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Generated tables.go")
+	fmt.Printf("Generated %s\n", outputFile)
 }
 
 func generateCode(wr *bytes.Buffer, tables []sequence.CodonTable) error {
@@ -84,7 +84,7 @@ func generateCode(wr *bytes.Buffer, tables []sequence.CodonTable) error {
 		},
 	}
 
-	tmpl, err := template.New("tables.tmpl").Funcs(tmplFuncs).ParseFiles("cmd/table_gen/tables.tmpl")
+	tmpl, err := template.New("tables.tmpl").Funcs(tmplFuncs).ParseFiles("cmd/codon_tables_gen/tables.tmpl")
 	if err != nil {
 		return err
 	}
