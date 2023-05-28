@@ -15,13 +15,17 @@ type CodonTable struct {
 }
 
 func GetCodonTable(id int) (CodonTable, error) {
-	for _, c := range CodonTables {
+	for _, c := range codonTables {
 		if id == c.ID {
 			return c.Copy(), nil
 		}
 	}
 
 	return CodonTable{}, fmt.Errorf("codon table no. %d not found", id)
+}
+
+func CodonTables() []CodonTable {
+	return codonTables
 }
 
 func (c *CodonTable) Copy() CodonTable {

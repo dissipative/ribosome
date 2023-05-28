@@ -6,7 +6,7 @@ import (
 )
 
 func TestCodonTable_TranslateCodon(t *testing.T) {
-	standardTable := CodonTables[0]
+	standardTable, _ := GetCodonTable(1)
 
 	testCases := []struct {
 		name     string
@@ -84,9 +84,9 @@ func TestCodonTable_ModifyCodonUsage(t *testing.T) {
 
 func TestGetCodonTable(t *testing.T) {
 	t.Run("edit-obtained-table", func(t *testing.T) {
-		standardTable := CodonTables[0]
+		standardTable := codonTables[0]
 
-		got, err := GetCodonTable(standardTable.ID)
+		got, err := GetCodonTable(1)
 		if err != nil {
 			t.Errorf("GetCodonTable() error = %v,", err)
 			return
@@ -114,11 +114,11 @@ func TestCodonTable_Copy(t *testing.T) {
 	}{
 		{
 			name: "Standard",
-			c:    CodonTables[0],
+			c:    codonTables[0],
 		},
 		{
 			name: "Vertebrate Mitochondrial",
-			c:    CodonTables[1],
+			c:    codonTables[1],
 		},
 	}
 
