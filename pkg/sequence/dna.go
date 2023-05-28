@@ -1,5 +1,10 @@
 package sequence
 
+import (
+	"errors"
+	"strings"
+)
+
 type DNASequence string
 
 var complementMapForDNA = map[Nucleotide]Nucleotide{
@@ -19,6 +24,23 @@ var complementMapForDNA = map[Nucleotide]Nucleotide{
 	'V': 'B', 'v': 'B',
 	'N': 'N', 'n': 'N',
 	'-': '-',
+}
+
+func NewDNASequence(input string) (DNASequence, error) {
+	upper := strings.ToUpper(input)
+	if strings.Contains(upper, "U") {
+		return "", errors.New("string contains U base and is not valid DNA sequence")
+	}
+
+	return DNASequence(upper), nil
+}
+
+func (d DNASequence) String() string {
+	return string(d)
+}
+
+func (d DNASequence) Length() int {
+	return len(d)
 }
 
 func (d DNASequence) Reverse() DNASequence {
