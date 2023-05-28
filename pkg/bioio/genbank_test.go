@@ -89,11 +89,17 @@ func TestReadGenbank(t *testing.T) {
 			expectedSeq: []Sequence{
 				{
 					ID:          "TEST123",
+					Version:     1,
+					Organism:    "synthetic construct",
+					Taxonomy:    "other sequences; artificial sequences.",
 					Description: "Test sequence.",
 					Sequence:    "cacacttgactccactgtgcgagcgcgtgtgtgtgtgtgttattttttgagaaaagcaaagagagcaagtgagaaccaacaccgatgcaaatcattttgttggctttacggttagttttt",
 				},
 				{
 					ID:          "TEST456",
+					Version:     1,
+					Organism:    "synthetic construct",
+					Taxonomy:    "other sequences; artificial sequences.",
 					Description: "Test sequence 2.",
 					Sequence:    "accagtatgactgcgctgcgaccgtgcagggtctcgtattgtcattagaaaatctcacatattcatttttcatttacaaataaaaatagccagcacgcagcctacaaattagcagcgcac",
 				},
@@ -106,6 +112,9 @@ func TestReadGenbank(t *testing.T) {
 			expectedSeq: []Sequence{
 				{
 					ID:          "TESTPROT",
+					Version:     1,
+					Organism:    "synthetic construct",
+					Taxonomy:    "other sequences; artificial sequences.",
 					Description: "Test protein sequence.",
 					Sequence:    "MVMGRTPRTR",
 				},

@@ -39,6 +39,8 @@ func WriteFile(filename string, format Format, sequences []Sequence) error {
 	switch format {
 	case Fasta:
 		return writeFASTA(file, sequences)
+	case Genbank:
+		return writeGenbank(file, sequences)
 	default:
 		return errors.New("unknown file format")
 	}
