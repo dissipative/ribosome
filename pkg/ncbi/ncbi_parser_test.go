@@ -64,36 +64,57 @@ Genetic-code-table ::= {
  }
 }`
 
+	standardTable, err := sequence.GetCodonTable(1)
+	if err != nil {
+		t.Error(err)
+	}
+	vmTable, err := sequence.GetCodonTable(2)
+	if err != nil {
+		t.Error(err)
+	}
+	moldMtTable, err := sequence.GetCodonTable(4)
+	if err != nil {
+		t.Error(err)
+	}
+	euplotidTable, err := sequence.GetCodonTable(10)
+	if err != nil {
+		t.Error(err)
+	}
+	bacterialTable, err := sequence.GetCodonTable(11)
+	if err != nil {
+		t.Error(err)
+	}
+
 	expectedResult := []sequence.CodonTable{
 		{
 			ID:          1,
 			Name:        "Standard",
 			Description: "SGC0",
-			Codons:      sequence.CodonTables[0].Codons,
+			Codons:      standardTable.Codons,
 		},
 		{
 			ID:          2,
 			Name:        "Vertebrate Mitochondrial",
 			Description: "SGC1",
-			Codons:      sequence.CodonTables[1].Codons,
+			Codons:      vmTable.Codons,
 		},
 		{
 			ID:          4,
 			Name:        "Mold Mitochondrial; Protozoan Mitochondrial; Coelenterate Mitochondrial; Mycoplasma; Spiroplasma",
 			Description: "SGC3",
-			Codons:      sequence.CodonTables[3].Codons,
+			Codons:      moldMtTable.Codons,
 		},
 		{
 			ID:          10,
 			Name:        "Euplotid Nuclear",
 			Description: "SGC9",
-			Codons:      sequence.CodonTables[7].Codons,
+			Codons:      euplotidTable.Codons,
 		},
 		{
 			ID:          11,
 			Name:        "Bacterial, Archaeal and Plant Plastid",
 			Description: "",
-			Codons:      sequence.CodonTables[8].Codons,
+			Codons:      bacterialTable.Codons,
 		},
 	}
 
