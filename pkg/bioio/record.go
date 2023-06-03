@@ -1,6 +1,6 @@
 package bioio
 
-type Sequence struct {
+type Record struct {
 	ID          string
 	Accession   string
 	Version     int

@@ -10,10 +10,10 @@ import (
 	"unicode"
 )
 
-func readGenbank(reader io.Reader) ([]Sequence, error) {
-	var sequences []Sequence
+func readGenbank(reader io.Reader) ([]Record, error) {
+	var sequences []Record
 	scanner := bufio.NewScanner(reader)
-	var currentSeq *Sequence
+	var currentSeq *Record
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -28,12 +28,12 @@ func readGenbank(reader io.Reader) ([]Sequence, error) {
 			if currentSeq != nil {
 				sequences = append(sequences, *currentSeq)
 			}
-			currentSeq = &Sequence{}
+			currentSeq = &Record{}
 			currentSeq.ID = fields[1]
 
 		case "DEFINITION":
 			if currentSeq == nil {
-				currentSeq = &Sequence{}
+				currentSeq = &Record{}
 			}
 
 			description := strings.Join(fields[1:], " ")
@@ -41,7 +41,7 @@ func readGenbank(reader io.Reader) ([]Sequence, error) {
 
 		case "ORIGIN":
 			if currentSeq == nil {
-				currentSeq = &Sequence{}
+				currentSeq = &Record{}
 			}
 
 			for scanner.Scan() {
@@ -59,7 +59,7 @@ func readGenbank(reader io.Reader) ([]Sequence, error) {
 
 		case "VERSION":
 			if currentSeq == nil {
-				currentSeq = &Sequence{}
+				currentSeq = &Record{}
 			}
 
 			// Assuming that the version information is always the second field and it includes accession number as well
@@ -76,7 +76,7 @@ func readGenbank(reader io.Reader) ([]Sequence, error) {
 
 		case "ORGANISM":
 			if currentSeq == nil {
-				currentSeq = &Sequence{}
+				currentSeq = &Record{}
 			}
 
 			// The organism name is usually the rest of the line after "ORGANISM"
@@ -118,7 +118,7 @@ func readGenbank(reader io.Reader) ([]Sequence, error) {
 	return sequences, nil
 }
 
-func writeGenbank(writer io.Writer, sequences []Sequence) error {
+func writeGenbank(writer io.Writer, sequences []Record) error {
 	for _, seq := range sequences {
 		_, err := fmt.Fprintf(writer, "LOCUS       %s\n", seq.ID)
 		if err != nil {

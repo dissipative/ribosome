@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func readFASTA(reader io.Reader) ([]Sequence, error) {
-	var sequences []Sequence
+func readFASTA(reader io.Reader) ([]Record, error) {
+	var sequences []Record
 	scanner := bufio.NewScanner(reader)
 
 	var currentID string
@@ -22,7 +22,7 @@ func readFASTA(reader io.Reader) ([]Sequence, error) {
 
 		if line[0] == '>' {
 			if currentID != "" {
-				sequences = append(sequences, Sequence{ID: currentID, Sequence: currentSeq.String()})
+				sequences = append(sequences, Record{ID: currentID, Sequence: currentSeq.String()})
 				currentSeq.Reset()
 			}
 			currentID = line[1:]
@@ -32,7 +32,7 @@ func readFASTA(reader io.Reader) ([]Sequence, error) {
 	}
 
 	if currentID != "" {
-		sequences = append(sequences, Sequence{ID: currentID, Sequence: currentSeq.String()})
+		sequences = append(sequences, Record{ID: currentID, Sequence: currentSeq.String()})
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -42,7 +42,7 @@ func readFASTA(reader io.Reader) ([]Sequence, error) {
 	return sequences, nil
 }
 
-func writeFASTA(writer io.Writer, sequences []Sequence) error {
+func writeFASTA(writer io.Writer, sequences []Record) error {
 	for _, seq := range sequences {
 		_, err := fmt.Fprintf(writer, ">%s\n%s\n", seq.ID, seq.Sequence)
 		if err != nil {

@@ -83,8 +83,8 @@ func processSequences(formatString string, codonTableID int, inputFile string) e
 	return nil
 }
 
-func printSequenceInfo(i int, seq bioio.Sequence, codonTable sequence.CodonTable) error {
-	fmt.Printf("Sequence %d: %s\n", i+1, seq.ID)
+func printSequenceInfo(i int, seq bioio.Record, codonTable sequence.CodonTable) error {
+	fmt.Printf("Record %d: %s\n", i+1, seq.ID)
 
 	// Convert to RNASequence
 	dna, err := sequence.NewDNASequence(seq.Sequence)

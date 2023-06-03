@@ -12,7 +12,7 @@ const (
 	Genbank
 )
 
-func ReadFile(filename string, format Format) ([]Sequence, error) {
+func ReadFile(filename string, format Format) ([]Record, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func ReadFile(filename string, format Format) ([]Sequence, error) {
 	}
 }
 
-func WriteFile(filename string, format Format, sequences []Sequence) error {
+func WriteFile(filename string, format Format, sequences []Record) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err

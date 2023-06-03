@@ -30,13 +30,13 @@ func Test_readFASTA(t *testing.T) {
 	tests := []struct {
 		name    string
 		file    io.Reader
-		want    []Sequence
+		want    []Record
 		wantErr bool
 	}{
 		{
 			name: "read-simple",
 			file: strings.NewReader(inputSimple),
-			want: []Sequence{
+			want: []Record{
 				{
 					ID:       "sequence1",
 					Sequence: "ATGCGAATTCAG",
@@ -55,7 +55,7 @@ func Test_readFASTA(t *testing.T) {
 		{
 			name: "read-multiline-sequences",
 			file: strings.NewReader(inputMultiline),
-			want: []Sequence{
+			want: []Record{
 				{
 					ID:       "sequence1",
 					Sequence: "ATGCGAATTCAGATGGCACTGA",
@@ -97,13 +97,13 @@ ATGCGTAGCATCAGATGCGAATTCAG
 func Test_writeFASTA(t *testing.T) {
 	tests := []struct {
 		name       string
-		sequences  []Sequence
+		sequences  []Record
 		wantWriter string
 		wantErr    bool
 	}{
 		{
 			name: "simple",
-			sequences: []Sequence{
+			sequences: []Record{
 				{
 					ID:       "sequence1",
 					Sequence: "ATGCGAATTCAGATGGCACTGA",

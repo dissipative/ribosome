@@ -73,20 +73,20 @@ ORIGIN
 //`
 
 func TestReadGenbank(t *testing.T) {
-	var emptySeqs []Sequence
+	var emptySeqs []Record
 
 	emptyGenbankFile := ""
 
 	testCases := []struct {
 		name          string
 		input         io.Reader
-		expectedSeq   []Sequence
+		expectedSeq   []Record
 		expectedError error
 	}{
 		{
 			name:  "dna-sequences",
 			input: strings.NewReader(genbankFileDNA),
-			expectedSeq: []Sequence{
+			expectedSeq: []Record{
 				{
 					ID:          "TEST123",
 					Version:     1,
@@ -109,7 +109,7 @@ func TestReadGenbank(t *testing.T) {
 		{
 			name:  "protein-sequence",
 			input: strings.NewReader(genbankFileProtein),
-			expectedSeq: []Sequence{
+			expectedSeq: []Record{
 				{
 					ID:          "TESTPROT",
 					Version:     1,
