@@ -9,6 +9,16 @@ import (
 type RNASequence string
 
 var ErrTooShortSequence = errors.New("sequence length must be at least 3")
+var ErrRNAContainsT = errors.New("string contains T base and is not valid RNA sequence")
+
+func NewRNASequence(input string) (RNASequence, error) {
+	upper := strings.ToUpper(input)
+	if strings.Contains(upper, "T") {
+		return "", ErrRNAContainsT
+	}
+
+	return RNASequence(upper), nil
+}
 
 func (r RNASequence) String() string {
 	return string(r)

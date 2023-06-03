@@ -92,7 +92,7 @@ func TestGetCodonTable(t *testing.T) {
 			return
 		}
 		if !reflect.DeepEqual(got, standardTable) {
-			t.Errorf("GetCodonTable() got = %v, want %v", got, standardTable)
+			t.Errorf("GetCodonTable() got = %v, expected %v", got, standardTable)
 		}
 
 		err = got.ModifyCodonUsage(map[string]AminoAcid{"AAA": 'T'})
