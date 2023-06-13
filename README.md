@@ -1,5 +1,7 @@
 # Ribosome
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/dissipative/ribosome)](https://goreportcard.com/report/github.com/dissipative/ribosome)
+
 The Ribosome package is a Go library designed for efficient transcription and translation of DNA and RNA sequences, inspired by the real processes in living cells. 
 The package provides an easy-to-use API for handling DNA, RNA, and Protein sequences, as well as functionality to work with different genetic code translation tables.
 
