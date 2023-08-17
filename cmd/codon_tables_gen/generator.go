@@ -4,23 +4,26 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/dissipative/ribosome/pkg/ncbi"
-	"github.com/dissipative/ribosome/pkg/sequence"
-	"github.com/jlaffaye/ftp"
+	"github.com/dissipative/ribosome/internal/parser"
 	"go/format"
 	"log"
 	"os"
 	"text/template"
 	"time"
+
+	"github.com/dissipative/ribosome/pkg/sequence"
+	"github.com/jlaffaye/ftp"
 )
 
-const ftpAddr = "ftp.ncbi.nih.gov:21"
-const ftpPath = "entrez/misc/data/gc.prt"
-const anonymous = "anonymous"
-const outputFile = "pkg/sequence/codon_tables.go"
+const (
+	ftpAddr    = "ftp.ncbi.nih.gov:21"
+	ftpPath    = "entrez/misc/data/gc.prt"
+	anonymous  = "anonymous"
+	outputFile = "pkg/sequence/codon_tables.go"
+)
 
 func main() {
-	// Download gc.prt content
+	// Download codon tables from ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt
 	conn, err := ftp.Dial(ftpAddr)
 	if err != nil {
 		log.Fatalf("error connecting to %s: %v\n", ftpAddr, err)
@@ -40,7 +43,7 @@ func main() {
 
 	// Parse gc.prt content
 	scanner := bufio.NewScanner(resp)
-	tables, err := ncbi.ParsePRTCodonTables(scanner)
+	tables, err := parser.ParsePRTCodonTables(scanner)
 	if err != nil {
 		fmt.Printf("error parsing gc.prt: %v\n", err)
 		return
@@ -62,7 +65,7 @@ func main() {
 	}
 
 	// Write the generated code to the tables.go file
-	err = os.WriteFile(outputFile, formatted, 0644)
+	err = os.WriteFile(outputFile, formatted, 0o644)
 	if err != nil {
 		fmt.Printf("error writing to %s: %v\n", outputFile, err)
 		return

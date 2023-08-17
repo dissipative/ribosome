@@ -1,4 +1,4 @@
-package ncbi
+package parser
 
 import (
 	"bufio"
@@ -12,7 +12,7 @@ import (
 
 func ParsePRTCodonTables(scanner *bufio.Scanner) ([]sequence.CodonTable, error) {
 	var tables []sequence.CodonTable
-	var parser = newTableParser()
+	parser := newGeneticCodesParser()
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -24,7 +24,7 @@ func ParsePRTCodonTables(scanner *bufio.Scanner) ([]sequence.CodonTable, error) 
 
 		if strings.Contains(line, "{") {
 			// refresh parser for each new table
-			parser = newTableParser()
+			parser = newGeneticCodesParser()
 			continue
 		}
 
@@ -59,7 +59,7 @@ func removeTagAndTrim(line string, tag string) string {
 	return strings.TrimSpace(line)
 }
 
-type tableParser struct {
+type geneticCodesParser struct {
 	nameIsUsed   bool
 	multiline    bool
 	table        *sequence.CodonTable
@@ -74,8 +74,8 @@ type ncbiCodeData struct {
 	base3    string
 }
 
-func newTableParser() *tableParser {
-	return &tableParser{
+func newGeneticCodesParser() *geneticCodesParser {
+	return &geneticCodesParser{
 		table: &sequence.CodonTable{
 			Codons:      make(map[string]sequence.AminoAcid),
 			StartCodons: make(map[string]sequence.AminoAcid),
@@ -85,47 +85,47 @@ func newTableParser() *tableParser {
 	}
 }
 
-func (tp *tableParser) processNameAndDescription(line string) {
+func (gcp *geneticCodesParser) processNameAndDescription(line string) {
 	val := removeTagAndTrim(line, "name")
 
 	if strings.Contains(line, "name") {
 		// multiline?
 		if strings.Count(line, "\"") == 1 {
-			tp.multiline = true
+			gcp.multiline = true
 		}
-		if tp.nameIsUsed {
-			tp.table.Description = val
+		if gcp.nameIsUsed {
+			gcp.table.Description = val
 		} else {
-			tp.table.Name = val
-			if !tp.multiline {
-				tp.nameIsUsed = true
+			gcp.table.Name = val
+			if !gcp.multiline {
+				gcp.nameIsUsed = true
 			}
 		}
-	} else if tp.multiline {
-		if tp.nameIsUsed {
-			tp.table.Description = fmt.Sprintf("%s %s", tp.table.Description, val)
+	} else if gcp.multiline {
+		if gcp.nameIsUsed {
+			gcp.table.Description = fmt.Sprintf("%s %s", gcp.table.Description, val)
 		} else {
-			tp.table.Name = fmt.Sprintf("%s %s", tp.table.Name, val)
+			gcp.table.Name = fmt.Sprintf("%s %s", gcp.table.Name, val)
 		}
 
 		// name ending?
 		if strings.Count(line, "\"") == 1 {
-			tp.multiline = false
-			if !tp.nameIsUsed {
-				tp.nameIsUsed = true
+			gcp.multiline = false
+			if !gcp.nameIsUsed {
+				gcp.nameIsUsed = true
 			}
 		}
 	}
 }
 
-func (tp *tableParser) processID(line string) error {
+func (gcp *geneticCodesParser) processID(line string) error {
 	if !strings.Contains(line, " id") {
 		return nil
 	}
 
 	var err error
 
-	tp.table.ID, err = strconv.Atoi(removeTagAndTrim(line, "id"))
+	gcp.table.ID, err = strconv.Atoi(removeTagAndTrim(line, "id"))
 	if err != nil {
 		return err
 	}
@@ -133,44 +133,44 @@ func (tp *tableParser) processID(line string) error {
 	return nil
 }
 
-func (tp *tableParser) processCodons(line string) {
+func (gcp *geneticCodesParser) processCodons(line string) {
 	if strings.Contains(line, "sncbieaa") {
-		tp.ncbiCodeData.sncbieaa = removeTagAndTrim(line, "sncbieaa")
+		gcp.ncbiCodeData.sncbieaa = removeTagAndTrim(line, "sncbieaa")
 	}
 	if strings.Contains(line, " ncbieaa") {
-		tp.ncbiCodeData.ncbieaa = removeTagAndTrim(line, "ncbieaa")
+		gcp.ncbiCodeData.ncbieaa = removeTagAndTrim(line, "ncbieaa")
 	}
 	if strings.Contains(line, "-- Base1") {
-		tp.ncbiCodeData.base1 = removeTagAndTrim(line, "-- Base1")
+		gcp.ncbiCodeData.base1 = removeTagAndTrim(line, "-- Base1")
 	}
 	if strings.Contains(line, "-- Base2") {
-		tp.ncbiCodeData.base2 = removeTagAndTrim(line, "-- Base2")
+		gcp.ncbiCodeData.base2 = removeTagAndTrim(line, "-- Base2")
 	}
 	if strings.Contains(line, "-- Base3") {
-		tp.ncbiCodeData.base3 = removeTagAndTrim(line, "-- Base3")
+		gcp.ncbiCodeData.base3 = removeTagAndTrim(line, "-- Base3")
 	}
-	if tp.ncbiCodeData != nil && tp.ncbiCodeData.sncbieaa != "" &&
-		tp.ncbiCodeData.ncbieaa != "" && tp.ncbiCodeData.base1 != "" &&
-		tp.ncbiCodeData.base2 != "" && tp.ncbiCodeData.base3 != "" {
-		tp.parseNCBICodeData()
+	if gcp.ncbiCodeData != nil && gcp.ncbiCodeData.sncbieaa != "" &&
+		gcp.ncbiCodeData.ncbieaa != "" && gcp.ncbiCodeData.base1 != "" &&
+		gcp.ncbiCodeData.base2 != "" && gcp.ncbiCodeData.base3 != "" {
+		gcp.parseNCBICodeData()
 	}
 }
 
-func (tp *tableParser) parseNCBICodeData() {
-	for i := 0; i < len(tp.ncbiCodeData.ncbieaa); i++ {
-		codon := string([]byte{tp.ncbiCodeData.base1[i], tp.ncbiCodeData.base2[i], tp.ncbiCodeData.base3[i]})
-		// !! DNA -> RNA
+func (gcp *geneticCodesParser) parseNCBICodeData() {
+	for i := 0; i < len(gcp.ncbiCodeData.ncbieaa); i++ {
+		codon := string([]byte{gcp.ncbiCodeData.base1[i], gcp.ncbiCodeData.base2[i], gcp.ncbiCodeData.base3[i]})
+		// DNA -> RNA
 		codon = strings.ReplaceAll(codon, "T", "U")
-		tp.table.Codons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
+		gcp.table.Codons[codon] = sequence.AminoAcid(gcp.ncbiCodeData.ncbieaa[i])
 
-		if tp.ncbiCodeData.sncbieaa[i] == '-' {
+		if gcp.ncbiCodeData.sncbieaa[i] == '-' {
 			continue
 		}
-		if tp.ncbiCodeData.sncbieaa[i] == '*' {
-			tp.table.StopCodons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
+		if gcp.ncbiCodeData.sncbieaa[i] == '*' {
+			gcp.table.StopCodons[codon] = sequence.AminoAcid(gcp.ncbiCodeData.ncbieaa[i])
 		}
-		if tp.ncbiCodeData.sncbieaa[i] == 'M' {
-			tp.table.StartCodons[codon] = sequence.AminoAcid(tp.ncbiCodeData.ncbieaa[i])
+		if gcp.ncbiCodeData.sncbieaa[i] == 'M' {
+			gcp.table.StartCodons[codon] = sequence.AminoAcid(gcp.ncbiCodeData.ncbieaa[i])
 		}
 	}
 }

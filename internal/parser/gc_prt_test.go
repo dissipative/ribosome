@@ -1,4 +1,4 @@
-package ncbi
+package parser
 
 import (
 	"bufio"
@@ -120,7 +120,6 @@ Genetic-code-table ::= {
 
 	scanner := bufio.NewScanner(strings.NewReader(testInput))
 	result, err := ParsePRTCodonTables(scanner)
-
 	if err != nil {
 		t.Error(err)
 	}
